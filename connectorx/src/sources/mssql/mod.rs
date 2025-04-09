@@ -59,7 +59,7 @@ pub fn mssql_config(url: &Url) -> Config {
     }
     config.port(url.port().unwrap_or(1433));
     // remove the leading "/"
-    config.database(&url.path()[1..]);
+    config.database(decode(&url.path()[1..])?.to_owned());
     // Using SQL Server authentication.
     #[allow(unused)]
     let params: HashMap<String, String> = url.query_pairs().into_owned().collect();
@@ -96,6 +96,7 @@ pub fn mssql_config(url: &Url) -> Config {
 
     match params.get("encrypt") {
         Some(v) if v.to_lowercase() == "true" => config.encryption(EncryptionLevel::Required),
+        Some(v) if v.to_lowercase() == "false" => config.encryption(EncryptionLevel::Off),
         _ => config.encryption(EncryptionLevel::NotSupported),
     };
 
